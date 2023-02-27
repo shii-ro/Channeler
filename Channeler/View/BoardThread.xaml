@@ -1,0 +1,338 @@
+﻿<UserControl x:Class="Channeler.View.BoardThread"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:viewmodel="clr-namespace:Channeler.ViewModel"
+             xmlns:converter="clr-namespace:Channeler.Converters"
+             xmlns:controls="clr-namespace:Channeler.Controls"
+             xmlns:models="clr-namespace:Channeler.Model"
+             xmlns:local="clr-namespace:Channeler.View"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodel:BoardThreadViewModel}"
+             d:Background="White"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <converter:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <DataTemplate x:Key="postMiniTemplate" >
+            <Border
+                BorderBrush="#b7c5d9"
+                Background="#d6daf0"
+                BorderThickness="2">
+                <Grid>
+                    <Grid Margin="0"
+                        Grid.Column="0"
+                        Width="Auto">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <!-- Poster Name, Date of the post, Post Number, Add Replies later -->
+                        <WrapPanel Grid.Row="0">
+                            <TextBlock  Margin="5,0,0,0" FontSize="14" Text="{Binding name}" Foreground="#117743" FontWeight="Bold" />
+                            <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="{Binding now}" />
+                            <TextBlock  Margin="5,0,0,0" Text="No." FontSize="14" >
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" >
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{Binding no}" FontSize="14">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" >
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </WrapPanel>
+                        <!-- Post File Info ( If there's any) -->
+                        <TextBlock Grid.Row="1"   Visibility="{Binding filename, Converter={StaticResource NullToVisibilityConverter}}">
+                            <TextBlock.Inlines>
+                                <Run Text="File:" />
+                                <Run Text="{Binding fullFile, Mode=OneWay}" TextDecorations="Underline">
+                                    <Run.Style>
+                                        <Style TargetType="Run" >
+                                            <Setter Property="Foreground" Value="#34345c"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="Red" />
+                                                    <Setter Property="Cursor" Value="Hand" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Run.Style>
+                                </Run>
+                                <Run Text="{Binding fileInfo, Mode=OneWay}" />
+                            </TextBlock.Inlines>
+                        </TextBlock>
+                        <!-- Post Content -->
+                        <Grid Grid.Row="2" Margin="10,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image
+                                Visibility="{Binding imageThumbUrl, Converter={StaticResource NullToVisibilityConverter}}">
+                                <Image.Style>
+                                    <Style TargetType="{x:Type Image}">
+                                        <Setter Property="MaxHeight" Value="150" />
+                                        <Setter Property="MaxWidth" Value="150" />
+                                        <Setter Property="Source" Value="{Binding imageThumbUrl}" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="MaxHeight" Value="800" />
+                                                <Setter Property="MaxWidth" Value="800" />
+                                                <Setter Property="Source" Value="{Binding imageUrl}" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+
+                                </Image.Style>
+                            </Image>
+                            <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
+                            <controls:FormattedTextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="postTemplate" >
+            <Border
+                            BorderBrush="#b7c5d9"
+                            Background="#d6daf0"
+                            BorderThickness="2"
+                            Padding="5"
+                            Margin="20,2,0,0"
+                            >
+                <Grid>
+                    <Grid Margin="0"
+                                            Grid.Column="0"
+                                            Width="Auto">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <!-- Poster Name, Date of the post, Post Number, Add Replies later -->
+                        <WrapPanel Grid.Row="0">
+                            <TextBlock  Margin="5,0,0,0" FontSize="14" Text="{Binding name}" Foreground="#117743" FontWeight="Bold" />
+                            <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="{Binding now}" />
+                            <TextBlock  Margin="5,0,0,0" Text="No." FontSize="14" >
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" >
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{Binding no}" FontSize="14">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" >
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <ItemsControl ItemsSource="{Binding RepliesPosts}" Margin="5,0,0,0" VerticalAlignment="Bottom">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontSize="11" TextDecorations="Underline" VerticalAlignment="Bottom" TextWrapping="Wrap">
+                                            <TextBlock.Inlines>
+                                                <Run Text=">>" />
+                                                <Run Text="{Binding replyNo, Mode=OneTime}"/>
+                                                <Run Text=" " />
+                                            </TextBlock.Inlines>
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#34345C" />
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True" >
+                                                            <Setter Property="Foreground" Value="#d00" />
+                                                            <Setter Property="Cursor" Value="Hand" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <TextBlock.ToolTip>
+                                                <ToolTip
+                                                    Content="{Binding replyPost}"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
+                                                    Foreground="Black"
+                                                    ContentTemplate="{StaticResource postMiniTemplate}"
+                                                    ToolTipService.InitialShowDelay="0"
+                                                    ToolTipService.BetweenShowDelay="0">
+                                                </ToolTip>
+                                            </TextBlock.ToolTip>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </WrapPanel>
+                        <!-- Post File Info ( If there's any) -->
+                        <TextBlock Grid.Row="1"   Visibility="{Binding filename, Converter={StaticResource NullToVisibilityConverter}}">
+                            <TextBlock.Inlines>
+                                <Run Text="File:" />
+                                <Run Text="{Binding fullFile, Mode=OneWay}" TextDecorations="Underline">
+                                    <Run.Style>
+                                        <Style TargetType="Run" >
+                                            <Setter Property="Foreground" Value="#34345c"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="Red" />
+                                                    <Setter Property="Cursor" Value="Hand" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Run.Style>
+                                </Run>
+                                <Run Text="{Binding fileInfo, Mode=OneWay}" />
+                            </TextBlock.Inlines>
+                        </TextBlock>
+                        <!-- Post Content -->
+                        <Grid Grid.Row="2" Margin="10,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image
+                                            Visibility="{Binding imageThumbUrl, Converter={StaticResource NullToVisibilityConverter}}"
+                                            >
+                                <Image.Style>
+                                    <Style TargetType="{x:Type Image}">
+                                        <Setter Property="MaxHeight" Value="150" />
+                                        <Setter Property="MaxWidth" Value="150" />
+                                        <Setter Property="Source" Value="{Binding imageThumbUrl}" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="MaxHeight" Value="800" />
+                                                <Setter Property="MaxWidth" Value="800" />
+                                                <Setter Property="Source" Value="{Binding imageUrl}" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+
+                                </Image.Style>
+                            </Image>
+                            <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
+                            <controls:FormattedTextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+    <ScrollViewer VirtualizingPanel.IsVirtualizing="True">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <!-- NavBar -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <!-- Back Button -->
+                    <Button Grid.Column="0" Content="Back" Command="{Binding BackToCatalogCommand}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                </Grid>
+                <!-- File -->
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" >
+                    <TextBlock.Inlines>
+                        <Run Text="File:" />
+                        <Run Text="{Binding ThreadPosts.posts[0].fullFile, Mode=Oneway}" TextDecorations="Underline" >
+                            <Run.Style>
+                                <Style TargetType="Run" >
+                                    <Setter Property="Foreground" Value="#34345c"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Foreground" Value="Red" />
+                                            <Setter Property="Cursor" Value="Hand" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Run.Style>
+                        </Run>
+                        <Run Text="{Binding ThreadPosts.posts[0].fileInfo, Mode=OneWay}" />
+                    </TextBlock.Inlines>
+                </TextBlock>
+                <!-- OP Post -->
+                <Image
+                    Grid.Row="2"
+                    Grid.RowSpan="2"
+                    Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Source="{Binding CurrentThread.imageUrl}"
+                    Margin="25,0,0,0"
+                    MaxHeight="250"
+                    MaxWidth="250" />
+                <DockPanel Grid.Column="1" Grid.Row="1" Margin="10,10,0,0">
+                    <TextBlock FontSize="14" VerticalAlignment="Center">
+                        <TextBlock.Inlines>
+                            <Run Text="{Binding CurrentThread.sub}"/>
+                            <Run Text="{Binding CurrentThread.name}" Foreground="#117743" FontWeight="Bold"/>
+                            <Run Text="{Binding CurrentThread.now}" />
+                            <Run Text="No." />
+                            <Run Text="{Binding CurrentThread.no}" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                </DockPanel>
+                <controls:FormattedTextBlock Grid.Column="1" FontSize="14" Grid.Row="2" Text="{Binding CurrentThread.com}"  Margin="10,10,0,0"/>
+            </Grid>
+
+            <ListView Grid.Row="1" ItemsSource="{Binding ThreadPosts.posts}" VirtualizingPanel.IsVirtualizing="True" ItemTemplate="{StaticResource postTemplate}">
+                <ListView.Template>
+                    <ControlTemplate>
+                        <ItemsPresenter></ItemsPresenter>
+                    </ControlTemplate>
+                </ListView.Template>
+                
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel >
+                        </StackPanel>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+            </ListView>
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>
