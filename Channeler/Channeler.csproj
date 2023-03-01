@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Behaviours\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
 

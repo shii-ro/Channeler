@@ -69,7 +69,7 @@
                             </TextBlock>
                             <StackPanel Grid.Row="2">
                                 <TextBlock TextWrapping="Wrap" Text="{Binding sub}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding com}"/>
+                                <controls:FormattedTextBlock Text="{Binding com, Mode=OneTime}"/>
                             </StackPanel>
                         </Grid>
                     </Border>

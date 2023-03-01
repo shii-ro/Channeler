@@ -90,7 +90,7 @@
                                     <Style TargetType="{x:Type Image}">
                                         <Setter Property="MaxHeight" Value="150" />
                                         <Setter Property="MaxWidth" Value="150" />
-                                        <Setter Property="Source" Value="{Binding imageThumbUrl}" />
+                                        <Setter Property="Source" Value="{Binding imageUrl, TargetNullValue={x:Null}}" />
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter Property="MaxHeight" Value="800" />
@@ -99,8 +99,8 @@
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
-
                                 </Image.Style>
+
                             </Image>
                             <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
                             <controls:FormattedTextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
@@ -159,11 +159,17 @@
                             <ItemsControl ItemsSource="{Binding RepliesPosts}" Margin="5,0,0,0" VerticalAlignment="Bottom">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock FontSize="11" TextDecorations="Underline" VerticalAlignment="Bottom" TextWrapping="Wrap">
+                                        <TextBlock
+                                            FontSize="11"
+                                            TextDecorations="Underline"
+                                            VerticalAlignment="Bottom"
+                                            MouseLeftButtonDown="TextBlock_MouseLeftButtonDown"
+                                            Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                            Margin="0,0,5,0"
+                                            TextWrapping="Wrap">
                                             <TextBlock.Inlines>
                                                 <Run Text=">>" />
-                                                <Run Text="{Binding replyNo, Mode=OneTime}"/>
-                                                <Run Text=" " />
+                                                <Run Text="{Binding replyNo, Mode=OneWay}"/>
                                             </TextBlock.Inlines>
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -250,7 +256,7 @@
             </Border>
         </DataTemplate>
     </UserControl.Resources>
-    <ScrollViewer VirtualizingPanel.IsVirtualizing="True">
+    <ScrollViewer x:Name="contentScrollViewer" VirtualizingPanel.IsVirtualizing="True" >
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -318,13 +324,22 @@
                 <controls:FormattedTextBlock Grid.Column="1" FontSize="14" Grid.Row="2" Text="{Binding CurrentThread.com}"  Margin="10,10,0,0"/>
             </Grid>
 
-            <ListView Grid.Row="1" ItemsSource="{Binding ThreadPosts.posts}" VirtualizingPanel.IsVirtualizing="True" ItemTemplate="{StaticResource postTemplate}">
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding ThreadPosts.posts}"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      ItemTemplate="{StaticResource postTemplate}">
                 <ListView.Template>
                     <ControlTemplate>
                         <ItemsPresenter></ItemsPresenter>
                     </ControlTemplate>
                 </ListView.Template>
-                
+
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Focusable" Value="false"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel >

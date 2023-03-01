@@ -17,10 +17,12 @@ namespace Channeler.Controls
     {
         static Style quotelinkStyle;
         static Style quoteStyle;
+        static Style spoilerTextStyle;
         public FormattedTextBlock()
         {
             quotelinkStyle = Application.Current.FindResource("quotelinkStyle") as Style;
             quoteStyle = Application.Current.FindResource("quoteStyle") as Style;
+            spoilerTextStyle = Application.Current.FindResource("spoilerTextStyle") as Style;
             TextWrapping = TextWrapping.Wrap;
         }
 
@@ -54,7 +56,7 @@ namespace Channeler.Controls
         }
         private static string[] sClosingTags =
         {
-            "<area>","<base>", "<br>", "<col>", "<hr>", "<embed>"// i think the rest does not have any use in the posts
+            "<area>","<base>", "<br>", "<col>", "<hr>", "<embed>", "<wbr>"// i think the rest does not have any use in the posts
         };
 
         private struct Attribute
@@ -76,7 +78,7 @@ namespace Channeler.Controls
             List<HtmlParse> root = new List<HtmlParse>();
             HtmlParse currentElement = new HtmlParse();
             char c = newText[0];
-            for (int characterCount = 1; characterCount < newText.Length; )
+            for (int characterCount = 1; characterCount < newText.Length;)
             {
                 // start of a HTMl element ?
                 // just straight text then, convert to a <p> element
@@ -93,9 +95,9 @@ namespace Channeler.Controls
                             newTag += c;
 
                             c = newText[characterCount++];
-                            
+
                             if (c == '=') continue;
-                            else if(c == '>')
+                            else if (c == '>')
                             {
                                 newTag += c;
                                 break;
@@ -105,7 +107,7 @@ namespace Channeler.Controls
                                 newTag += '>';
                                 break;
                             }
-                            
+
                         }
                         currentElement.tag = newTag;
 
@@ -160,12 +162,12 @@ namespace Channeler.Controls
                         // check if the next character is '/', if not, its a nested element
                         root.Add(currentElement);
                         currentElement = new HtmlParse();
-                        while(c != '>' && characterCount < newText.Length)
+                        while (c != '>' && characterCount < newText.Length)
                         {
                             c = newText[characterCount++];
                         }
                         insideElement = false;
-                        if(characterCount < newText.Length)
+                        if (characterCount < newText.Length)
                             c = newText[characterCount++];
                     }
                     else if (c != '<')
@@ -179,7 +181,7 @@ namespace Channeler.Controls
                         currentElement.content = content;
                     }
 
-                    
+
 
                 }
 
@@ -207,11 +209,18 @@ namespace Channeler.Controls
             }
             foreach (HtmlParse h in root)
             {
-                
+
                 switch (h.tag)
                 {
+                    case "<s>":
+                        Run spoilerText = new Run();
+                        spoilerText.Text = System.Net.WebUtility.HtmlDecode(h.content);
+                        spoilerText.Style = spoilerTextStyle;
+                        textBlock.Inlines.Add(spoilerText);
+                        break;
                     case "<p>": textBlock.Inlines.Add(System.Net.WebUtility.HtmlDecode(h.content)); break;
                     case "<br>": textBlock.Inlines.Add("\n"); break;
+                    case "<wbr>": textBlock.Inlines.Add("\n"); break;
                     case "<span>":
                         Run quoteText = new Run();
                         quoteText.Style = quoteStyle;
@@ -219,7 +228,7 @@ namespace Channeler.Controls
                         textBlock.Inlines.Add(quoteText);
                         break;
                     case "<a>":
-                        Run quotelinkText = new Run();  
+                        Run quotelinkText = new Run();
                         quotelinkText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         quotelinkText.Style = quotelinkStyle;
                         textBlock.Inlines.Add(quotelinkText);
