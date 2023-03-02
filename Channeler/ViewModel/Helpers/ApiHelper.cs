@@ -45,7 +45,7 @@ namespace Channeler.ViewModel.Helpers
             }
             return boards;
         }
-        public static async Task<ObservableCollection<BoardPage>> GetBoardCatalog(string boardName)
+        public static async Task<List<BoardPage>> GetBoardCatalog(string boardName)
         {
             string url = BASE_URL + boardName + CATALOG_ENDPOINT;
 
@@ -59,7 +59,7 @@ namespace Channeler.ViewModel.Helpers
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var myDeserializedClass = JsonConvert.DeserializeObject<ObservableCollection<BoardPage>>(content);
+                    var myDeserializedClass = JsonConvert.DeserializeObject<List<BoardPage>>(content);
 
                     foreach (BoardPage bp in myDeserializedClass)
                     {

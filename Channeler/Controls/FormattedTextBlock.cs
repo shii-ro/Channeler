@@ -148,6 +148,7 @@ namespace Channeler.Controls
 
                     // now checks if the attribute has content inside if the tag is not self closing
                     string content = "";
+                    if (characterCount >= newText.Length) return;
                     c = newText[characterCount++];
 
                     if (sClosingTags.Contains(currentElement.tag))
