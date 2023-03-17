@@ -111,16 +111,14 @@
         </DataTemplate>
         <DataTemplate x:Key="postTemplate" >
             <Border
-                            BorderBrush="#b7c5d9"
-                            Background="#d6daf0"
-                            BorderThickness="2"
-                            Padding="5"
-                            Margin="20,2,0,0"
-                            >
-                <Grid>
+                BorderBrush="#b7c5d9"
+                BorderThickness="2"
+                Margin="20,2,0,0"
+                >
+                <Grid x:Name="postGrid" Background="#d6daf0">
                     <Grid Margin="0"
-                                            Grid.Column="0"
-                                            Width="Auto">
+                            Grid.Column="0"
+                            Width="Auto">
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition />
@@ -160,16 +158,15 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock
-                                            FontSize="11"
-                                            TextDecorations="Underline"
-                                            VerticalAlignment="Bottom"
-                                            MouseLeftButtonDown="TextBlock_MouseLeftButtonDown"
-                                            Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
-                                            Margin="0,0,5,0"
-                                            TextWrapping="Wrap">
+                                                FontSize="11"
+                                                TextDecorations="Underline"
+                                                VerticalAlignment="Bottom"
+                                                MouseLeftButtonDown="TextBlock_ScrollToPost"
+                                                Margin="0,0,5,0"
+                                                TextWrapping="Wrap">
                                             <TextBlock.Inlines>
                                                 <Run Text=">>" />
-                                                <Run Text="{Binding replyNo, Mode=OneWay}"/>
+                                                <Run Text="{Binding no, Mode=OneWay}"/>
                                             </TextBlock.Inlines>
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -184,13 +181,13 @@
                                             </TextBlock.Style>
                                             <TextBlock.ToolTip>
                                                 <ToolTip
-                                                    Content="{Binding replyPost}"
-                                                    BorderThickness="0"
-                                                    Background="Transparent"
-                                                    Foreground="Black"
-                                                    ContentTemplate="{StaticResource postMiniTemplate}"
-                                                    ToolTipService.InitialShowDelay="0"
-                                                    ToolTipService.BetweenShowDelay="0">
+                                                        Content="{Binding }"
+                                                        BorderThickness="0"
+                                                        Background="Transparent"
+                                                        Foreground="Black"
+                                                        ContentTemplate="{StaticResource postMiniTemplate}"
+                                                        ToolTipService.InitialShowDelay="0"
+                                                        ToolTipService.BetweenShowDelay="0">
                                                 </ToolTip>
                                             </TextBlock.ToolTip>
                                         </TextBlock>
@@ -229,9 +226,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Image
-                                            Visibility="{Binding imageThumbUrl, Converter={StaticResource NullToVisibilityConverter}}"
-                                            >
+                            <Image Visibility="{Binding imageThumbUrl, Converter={StaticResource NullToVisibilityConverter}}">
                                 <Image.Style>
                                     <Style TargetType="{x:Type Image}">
                                         <Setter Property="MaxHeight" Value="150" />
@@ -249,7 +244,15 @@
                                 </Image.Style>
                             </Image>
                             <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
-                            <controls:FormattedTextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
+                            <controls:FormattedTextBlock
+                                Grid.Column="1" 
+                                Text="{Binding com}" 
+                                FontSize="14" 
+                                TextWrapping="Wrap" 
+                                Margin="10,5,0,0"
+                                Tag="{Binding ElementName=postGrid}"
+                                Replies="{Binding QuotesPosts}"
+                                Padding="0,0,0,10" />
                         </Grid>
                     </Grid>
                 </Grid>
@@ -321,10 +324,16 @@
                         </TextBlock.Inlines>
                     </TextBlock>
                 </DockPanel>
-                <controls:FormattedTextBlock Grid.Column="1" FontSize="14" Grid.Row="2" Text="{Binding CurrentThread.com}"  Margin="10,10,0,0"/>
+                <controls:FormattedTextBlock
+                    Grid.Column="1" 
+                    FontSize="14"
+                    Grid.Row="2" 
+                    Text="{Binding CurrentThread.com}"
+                    Tag="{Binding ThreadPosts.posts[0].RepliesPosts}"
+                    Margin="10,10,0,0"/>
             </Grid>
-
-            <ListView Grid.Row="1"
+            <!-- Posts ListView -->
+            <ListView x:Name="postsListView" Grid.Row="1"
                       ItemsSource="{Binding ThreadPosts.posts}"
                       VirtualizingPanel.IsVirtualizing="True"
                       ItemTemplate="{StaticResource postTemplate}">

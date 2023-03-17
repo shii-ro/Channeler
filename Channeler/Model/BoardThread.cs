@@ -34,14 +34,10 @@ namespace Channeler.Model
         public string capcode { get; set; }
         public string semantic_url { get; set; }
         public int replies { get; set; }
-        public List<RepliesPosts> RepliesPosts { get; set; }
+        public List<Post> RepliesPosts { get; set; }
+        public List<Post> QuotesPosts { get; set; }
         public int images { get; set; }
         public int unique_ips { get; set; }
-    }
-    public class RepliesPosts
-    {
-        public int replyNo { get; set; }
-        public Post replyPost { get; set; }
     }
     public class ThreadPosts
     {

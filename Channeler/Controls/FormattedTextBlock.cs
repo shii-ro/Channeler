@@ -1,28 +1,29 @@
-﻿using Channeler.ViewModel;
-using Newtonsoft.Json.Linq;
+﻿using Channeler.Model;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Channeler.Controls
-{
+{ 
     public class FormattedTextBlock : TextBlock
     {
         static Style quotelinkStyle;
         static Style quoteStyle;
         static Style spoilerTextStyle;
+        static Style viewPostToolTip;
+        static List<Post> _quotes;
+        static DataTemplate postPreview;
+        public static List<Post> QuotesPosts { get => _quotes; set => _quotes = value; }
+
         public FormattedTextBlock()
         {
             quotelinkStyle = Application.Current.FindResource("quotelinkStyle") as Style;
             quoteStyle = Application.Current.FindResource("quoteStyle") as Style;
             spoilerTextStyle = Application.Current.FindResource("spoilerTextStyle") as Style;
+            postPreview = Application.Current.FindResource("postMiniTemplate") as DataTemplate;
+            viewPostToolTip = Application.Current.FindResource("viewPostToolTip") as Style;
             TextWrapping = TextWrapping.Wrap;
         }
 
@@ -31,6 +32,30 @@ namespace Channeler.Controls
             get { return (string)GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
         }
+
+        public List<Post> Replies
+        {
+            get { return (List<Post>)GetValue(RepliesProperty); }
+            set { SetValue(RepliesProperty, value); }
+        }
+
+
+
+        // Using a DependencyProperty as the backing store for Replies.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty RepliesProperty =
+            DependencyProperty.Register("Replies", typeof(List<Post>), typeof(FormattedTextBlock), new PropertyMetadata(null, OnRepliesChanged));
+
+        private static void OnRepliesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is FormattedTextBlock textBlock))
+            {
+                return;
+            }
+
+            QuotesPosts = e.NewValue as List<Post>;
+        }
+
+
 
         // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
         public new static readonly DependencyProperty TextProperty =
@@ -228,10 +253,32 @@ namespace Channeler.Controls
                         quoteText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         textBlock.Inlines.Add(quoteText);
                         break;
-                    case "<a>":
+                    case "<a>": //  still struggling to scroll up on quote click
                         Run quotelinkText = new Run();
                         quotelinkText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         quotelinkText.Style = quotelinkStyle;
+
+                        if (QuotesPosts is not null)
+                            if (QuotesPosts.Count > 0)
+                            {
+                                foreach (var quote in QuotesPosts)
+                                {
+                                    string currentQuoteNo = quotelinkText.Text.Substring(2);
+                                    string compareQuoteNo = quote.no.ToString();
+                                    
+                                    if (currentQuoteNo == compareQuoteNo)
+                                    {
+                                        ToolTip tooltip = new ToolTip
+                                        {
+                                            ContentTemplate = postPreview,
+                                            Content = quote,
+                                            Style = viewPostToolTip
+                                        };
+                                        quotelinkText.ToolTip = tooltip;
+                                    }
+                                }
+                            }
+
                         textBlock.Inlines.Add(quotelinkText);
                         break;
                     default: break;
@@ -239,6 +286,5 @@ namespace Channeler.Controls
                 }
             }
         }
-
     }
 }

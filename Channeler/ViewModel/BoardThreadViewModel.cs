@@ -2,6 +2,7 @@
 using Channeler.Model;
 using Channeler.ViewModel.Helpers;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Channeler.ViewModel
 {
@@ -29,8 +30,10 @@ namespace Channeler.ViewModel
 
         private void ScrollToPost(object obj)
         {
-
         }
+
+    
+
         public override async Task LoadAsync()
         {
             ThreadPosts = await ApiHelper.GetThreadPosts(BoardName, CurrentThread.no.ToString());

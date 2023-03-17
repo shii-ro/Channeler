@@ -96,31 +96,66 @@ namespace Channeler.ViewModel.Helpers
 
                     /* get the thumbs and images url */
                     /* put the replies */
-                    foreach (Post p in myDeserializedClass.posts)
+                    foreach (Post currentPost in myDeserializedClass.posts)
                     {
-                        if (p.tim is not null)
+                        if (currentPost.tim is not null)
                         {
-                            p.imageThumbUrl = $"{"https://i.4cdn.org"}/{boardName}/{p.tim}s.jpg";
-                            p.imageUrl = $"{"https://i.4cdn.org"}/{boardName}/{p.tim}{p.ext}";
+                            currentPost.imageThumbUrl = $"{"https://i.4cdn.org"}/{boardName}/{currentPost.tim}s.jpg";
+                            currentPost.imageUrl = $"{"https://i.4cdn.org"}/{boardName}/{currentPost.tim}{currentPost.ext}";
                         }
                         else
                         {
-                            p.imageThumbUrl = null;
-                            p.imageUrl = null;
+                            currentPost.imageThumbUrl = null;
+                            currentPost.imageUrl = null;
                         }
-                        p.RepliesPosts = new List<RepliesPosts>();
 
-                        myDeserializedClass.posts.ForEach(post =>
+                        currentPost.RepliesPosts = new List<Post>();
+                        currentPost.QuotesPosts = new List<Post>();
+
+                        // Replies down
+                        foreach (Post otherPost in myDeserializedClass.posts)
                         {
-                            if (!post.Equals(p))
+                            if (!otherPost.Equals(currentPost))
                             {
-                                if (post.com is not null)
-                                    if (post.com.Contains(p.no.ToString()))
+                                // Replies Going Down
+                                if (otherPost.com is not null)
+                                {
+                                    // otherpost contains current p number
+                                    if (otherPost.com.Contains(currentPost.no.ToString()))
                                     {
-                                        p.RepliesPosts.Add(new RepliesPosts { replyNo = post.no, replyPost = post });
+                                        currentPost.RepliesPosts.Add(otherPost);
                                     }
+
+                                    // otherpost contains repliy to currentPost
+                                    //string currentPostContent = currentPost.com;
+                                    //string comparePostNo = otherPost.no.ToString();
+
+                                    //if (currentPostContent.Contains(comparePostNo))
+                                    //{
+                                    //    currentPost.QuotesPosts.Add(otherPost);
+                                    //}
+                                    //currentPost.QuotesPosts.Add(otherPost);
+                                }
                             }
-                        });
+                        }
+                    }
+
+                    foreach (Post currentPost in myDeserializedClass.posts)
+                    {
+                        if (currentPost.com is not null)
+                        {
+                            // if current post content contains quotes to others posts
+                            foreach (Post otherPost in myDeserializedClass.posts)
+                            {
+                                string currentPostContent = currentPost.com;
+                                string comparePostNo = otherPost.no.ToString();
+                                if (currentPostContent.Contains(comparePostNo) && !currentPost.Equals(otherPost))
+                                {
+                                    currentPost.QuotesPosts.Add(otherPost);
+                                }
+                                currentPost.QuotesPosts.Add(otherPost);
+                            }
+                        }
                     }
                     return myDeserializedClass;
                 }

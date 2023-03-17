@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Channeler.View
 {
     /// <summary>
-    /// Interação lógica para BoardThread.xam
+    /// Interação lógica para BoardThread.xaml
     /// </summary>
     public partial class BoardThread : UserControl
     {
@@ -25,22 +18,38 @@ namespace Channeler.View
             InitializeComponent();
         }
 
-        private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        public void TextBlock_ScrollToPost(object sender, MouseButtonEventArgs e)
         {
+            SolidColorBrush highlitedBackground = new SolidColorBrush(Color.FromArgb(0xFF, 0xd6, 0xba, 0xd0));
+            SolidColorBrush defaultBackground = new SolidColorBrush(Color.FromArgb(0xFF, 0xd6, 0xda, 0xf0));
 
             var textBlock = sender as TextBlock;
             var postNo = ((Run)textBlock.Inlines.Last()).Text;
-            ListView list = textBlock.Tag as ListView;
 
 
-            foreach (var item in FindVisualChildren<Border>(list))
+            foreach (var item in FindVisualChildren<Grid>(postsListView))
             {
-                foreach(var txtBlock in FindVisualChildren<TextBlock>(item))
+                foreach (var txtBlock in FindVisualChildren<TextBlock>(item))
                 {
-                    if (txtBlock.Text == postNo)
+                    if (item.Name.Equals("postGrid"))
                     {
-                        item.BringIntoView();
-                        break;
+                        if (txtBlock.Text == postNo)
+                        {
+                            item.Background = highlitedBackground;
+                            item.BringIntoView();
+                            item.Name = "postGrid";
+                            break;
+                        }
+
+                        else if (item.Name.Equals("postGrid")
+                                && item.Background.ToString()
+                                == highlitedBackground.ToString()
+                                && txtBlock.Text != postNo
+                                )
+                        {
+                            item.Background = defaultBackground;
+                            item.Name = "postGrid";
+                        }
                     }
                 }
             }
@@ -62,25 +71,5 @@ namespace Channeler.View
                 }
             }
         }
-
-        //    private childItem FindVisualChild<childItem>(DependencyObject obj)
-        //where childItem : DependencyObject
-        //    {
-        //        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-        //        {
-        //            DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-        //            if (child != null && child is childItem)
-        //            {
-        //                return (childItem)child;
-        //            }
-        //            else
-        //            {
-        //                childItem childOfChild = FindVisualChild<childItem>(child);
-        //                if (childOfChild != null)
-        //                    return childOfChild;
-        //            }
-        //        }
-        //        return null;
-        //    }
     }
 }
