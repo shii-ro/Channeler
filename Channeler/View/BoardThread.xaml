@@ -250,7 +250,7 @@
                                 FontSize="14" 
                                 TextWrapping="Wrap" 
                                 Margin="10,5,0,0"
-                                Tag="{Binding ElementName=postGrid}"
+                                PostList="{x:Reference postsListView}"
                                 Replies="{Binding QuotesPosts}"
                                 Padding="0,0,0,10" />
                         </Grid>

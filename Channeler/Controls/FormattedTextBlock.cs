@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace Channeler.Controls
 { 
@@ -14,8 +15,10 @@ namespace Channeler.Controls
         static Style spoilerTextStyle;
         static Style viewPostToolTip;
         static List<Post> _quotes;
+        static ListView _list;
         static DataTemplate postPreview;
         public static List<Post> QuotesPosts { get => _quotes; set => _quotes = value; }
+        public static ListView List { get => _list; set => _list = value; }
 
         public FormattedTextBlock()
         {
@@ -32,18 +35,35 @@ namespace Channeler.Controls
             get { return (string)GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
         }
-
         public List<Post> Replies
         {
             get { return (List<Post>)GetValue(RepliesProperty); }
             set { SetValue(RepliesProperty, value); }
         }
+        public ListView PostList
+        {
+            get { return (ListView)GetValue(PostListProperty); }
+            set { SetValue(PostListProperty, value); }
+        }
 
-
+        // Using a DependencyProperty as the backing store for PostList.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PostListProperty =
+            DependencyProperty.Register("PostList", typeof(ListView), typeof(FormattedTextBlock), new PropertyMetadata(null, OnPostListChanged));
 
         // Using a DependencyProperty as the backing store for Replies.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RepliesProperty =
             DependencyProperty.Register("Replies", typeof(List<Post>), typeof(FormattedTextBlock), new PropertyMetadata(null, OnRepliesChanged));
+
+        // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
+        public new static readonly DependencyProperty TextProperty =
+            DependencyProperty.Register("Text", typeof(string), typeof(FormattedTextBlock), new PropertyMetadata(null, OnTextChanged));
+
+        private static void OnPostListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if(d is null) return;
+            ListView list = e.NewValue as ListView;
+            List = list;
+        }
 
         private static void OnRepliesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -54,13 +74,6 @@ namespace Channeler.Controls
 
             QuotesPosts = e.NewValue as List<Post>;
         }
-
-
-
-        // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
-        public new static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register("Text", typeof(string), typeof(FormattedTextBlock), new PropertyMetadata(null, OnTextChanged));
-
 
         private static void OnTextChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
@@ -79,6 +92,7 @@ namespace Channeler.Controls
             }
             FormatText(textBlock, newText);
         }
+
         private static string[] sClosingTags =
         {
             "<area>","<base>", "<br>", "<col>", "<hr>", "<embed>", "<wbr>"// i think the rest does not have any use in the posts
@@ -230,7 +244,6 @@ namespace Channeler.Controls
                         root.Add(currentElement);
                         currentElement = new HtmlParse();
                     }
-                    //characterCount++;
                 }
             }
             foreach (HtmlParse h in root)
@@ -253,7 +266,7 @@ namespace Channeler.Controls
                         quoteText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         textBlock.Inlines.Add(quoteText);
                         break;
-                    case "<a>": //  still struggling to scroll up on quote click
+                    case "<a>": //  ugly and repetititve code
                         Run quotelinkText = new Run();
                         quotelinkText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         quotelinkText.Style = quotelinkStyle;
@@ -275,6 +288,7 @@ namespace Channeler.Controls
                                             Style = viewPostToolTip
                                         };
                                         quotelinkText.ToolTip = tooltip;
+                                        quotelinkText.MouseLeftButtonDown += ScrollToPostOnClick;
                                     }
                                 }
                             }
@@ -283,6 +297,59 @@ namespace Channeler.Controls
                         break;
                     default: break;
 
+                }
+            }
+        }
+
+        private static void ScrollToPostOnClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            SolidColorBrush highlitedBackground = new SolidColorBrush(Color.FromArgb(0xFF, 0xd6, 0xba, 0xd0));
+            SolidColorBrush defaultBackground = new SolidColorBrush(Color.FromArgb(0xFF, 0xd6, 0xda, 0xf0));
+
+            Run quote = sender as Run;
+            string postNo = quote.Text.Substring(2);
+
+            if (quote != null)
+            {
+                foreach (var item in FindVisualChildren<Grid>(List))
+                {
+                    foreach (var txtBlock in FindVisualChildren<TextBlock>(item))
+                    {
+                        if (txtBlock.Text == postNo)
+                        {
+                            item.Background = highlitedBackground;
+                            item.BringIntoView();
+                            item.Name = "postGrid";
+                            break;
+                        }
+
+                        else if (item.Name.Equals("postGrid")
+                                && item.Background.ToString()
+                                == highlitedBackground.ToString()
+                                && txtBlock.Text != postNo
+                                )
+                        {
+                            item.Background = defaultBackground;
+                            item.Name = "postGrid";
+                        }
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+
+                    if (child != null && child is T)
+                        yield return (T)child;
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                        yield return childOfChild;
                 }
             }
         }

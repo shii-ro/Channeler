@@ -11,7 +11,7 @@ namespace Channeler.Model
     {
         public string board { get; set; }
         public string title { get; set; }
-        public string description => $"{board} - {title}";
+        public string description => $"/{board}/ - {title}";
         public int ws_board { get; set; }
         public int per_page { get; set; }
         public int pages { get; set; }

@@ -25,14 +25,10 @@ namespace Channeler.ViewModel
         public DelegateCommand ScrollToPostCommand { get; }
         public BoardThreadViewModel()
         {
+            ThreadPosts = new ThreadPosts();
+            CurrentThread = new Thread();
             BackToCatalogCommand = new DelegateCommand(BackToCatalog);
         }
-
-        private void ScrollToPost(object obj)
-        {
-        }
-
-    
 
         public override async Task LoadAsync()
         {
