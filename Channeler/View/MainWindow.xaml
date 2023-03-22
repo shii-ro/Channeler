@@ -16,7 +16,11 @@
         <DataTemplate DataType="{x:Type viewmodel:BoardThreadViewModel}">
             <view:BoardThread />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodel:BoardContentViewModel}">
+            <view:BoardContent />
+        </DataTemplate>
     </Window.Resources>
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -30,8 +34,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-
-        <!-- Board Content Presenter -->
-        <ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" />
+        <!-- Board Content New -->
+        <ContentControl Grid.Column="1" Content="{Binding BoardContent}" />
     </Grid>
 </Window>

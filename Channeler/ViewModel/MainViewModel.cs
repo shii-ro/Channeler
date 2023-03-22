@@ -1,15 +1,9 @@
 ﻿using Channeler.Command;
 using Channeler.Model;
-using Channeler.View;
 using Channeler.ViewModel.Helpers;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Documents;
-using System.Windows.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Channeler.ViewModel
 {
@@ -17,8 +11,7 @@ namespace Channeler.ViewModel
     {
         private BoardList _boardList;
         private Board _selectedBoard;
-        public BoardCatalogViewModel BoardCatalog { get; }
-        public BoardThreadViewModel BoardThread { get; }
+        private BoardContentViewModel _boardContent;
 
         public DelegateCommand SelectViewModelCommand { get; }
         public DelegateCommand LoadThreadCommand { get; }
@@ -36,62 +29,96 @@ namespace Channeler.ViewModel
                 if (_selectedBoard != value)
                 {
                     _selectedBoard = value;
-                    LoadCatalog(null);
+                    LoadCatalogAsync(null);
                     OnPropertyChanged(nameof(SelectedBoard));
                 }
             }
         }
 
-        private ViewModelBase _currentViewModel;
-        public ViewModelBase CurrentViewModel
+        public BoardContentViewModel BoardContent
         {
-            get => _currentViewModel;
+            get => _boardContent;
             set
             {
-                if (CurrentViewModel != value)
-                {
-                    _currentViewModel = value;
-                    OnPropertyChanged(nameof(CurrentViewModel));
-                }
+                _boardContent = value;
+                OnPropertyChanged(nameof(BoardContent));
             }
         }
-
-        private async void SelectViewModel(object obj)
+        private async void LoadCatalogAsync(object obj)
         {
-            var viewModel = obj as ViewModelBase;
-            CurrentViewModel = viewModel;
-            await LoadAsync();
-        }
+            var newTab = new BoardCatalogViewModel();
+            newTab.CurrentBoard = SelectedBoard;
 
-        public async override Task LoadAsync()
-        {
-            if (CurrentViewModel is not null)
+            BoardContent.BoardTabs.Add(
+            new TabItem
             {
-                await CurrentViewModel.LoadAsync();
-            }
+                Header = CreateClosableHeader($"/{newTab.CurrentBoard.board}/ - Catalog"),
+                Content = newTab,
+            });
+            await newTab.LoadAsync();
         }
 
-        private void LoadCatalog(object obj)
-        {
-            if (SelectedBoard != null) BoardCatalog.CurrentBoard = SelectedBoard;
-            SelectViewModel(BoardCatalog);
-        }
-
-        private void LoadThread(object obj)
+        private async void LoadThreadAsync(object obj)
         {
             var t = obj as Model.Thread;
-            BoardThread.BoardName = SelectedBoard.board;
-            BoardThread.CurrentThread = t;
-            SelectViewModel(BoardThread);
+            var newTab = new BoardThreadViewModel();
+            newTab.BoardName = SelectedBoard.board;
+            newTab.CurrentThread = t;
+            BoardContent.BoardTabs.Add(
+                new TabItem
+                {
+                    Header = CreateClosableHeader($"/{newTab.BoardName}/ - {newTab.CurrentThread.sub ?? newTab.CurrentThread.com[..16]}"),
+                    Content = newTab
+                });
+            await newTab.LoadAsync();
         }
 
-        public MainViewModel(BoardCatalogViewModel boardCatalog, BoardThreadViewModel boardThread)
+        public MainViewModel(BoardContentViewModel boardContent)
         {
-            BoardCatalog = boardCatalog;
-            BoardThread = boardThread;
-            SelectViewModelCommand = new DelegateCommand(SelectViewModel);
-            LoadThreadCommand = new DelegateCommand(LoadThread);
+            BoardContent = boardContent;
+
+            LoadThreadCommand = new DelegateCommand(LoadThreadAsync);
             BoardList = ApiHelper.GetBoards();
+        }
+
+        private Grid CreateClosableHeader(string headerContent)
+        {
+            // there must be a better way of doing this
+            Grid headerGrid = new Grid();
+            ColumnDefinition headerText = new ColumnDefinition();
+            ColumnDefinition headerCloseButton = new ColumnDefinition();
+            headerGrid.ColumnDefinitions.Add(headerText);
+            headerGrid.ColumnDefinitions.Add(headerCloseButton);
+
+            // Create a TextBlock and set its properties
+            TextBlock myTextBlock = new TextBlock();
+            myTextBlock.Text = headerContent;
+            myTextBlock.HorizontalAlignment = HorizontalAlignment.Left;
+            myTextBlock.VerticalAlignment = VerticalAlignment.Center;
+
+            // Create a Button and set its properties
+            Button myButton = new Button();
+            myButton.Content = "X";
+            myButton.Margin = new Thickness(5, 0, -3, 0);
+            myButton.BorderThickness = new Thickness(0);
+            myButton.Background = Brushes.Transparent;
+            myButton.FontWeight = FontWeights.Bold;
+            myButton.HorizontalAlignment = HorizontalAlignment.Right;
+            myButton.VerticalAlignment = VerticalAlignment.Center;
+            myButton.Click += (sender, args) =>
+            {
+                // Get the parent TabItem of the header
+                TabItem parentTabItem = (TabItem)((Grid)((Button)sender).Parent).Parent;
+                BoardContent.BoardTabs.Remove(parentTabItem);
+            };
+
+            // Add the TextBlock and Button to the Grid
+            headerGrid.Children.Add(myTextBlock);
+            Grid.SetColumn(myTextBlock, 0);
+            headerGrid.Children.Add(myButton);
+            Grid.SetColumn(myButton, 1);
+
+            return headerGrid;
         }
     }
 }

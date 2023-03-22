@@ -14,26 +14,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Channeler
+namespace Channeler.View
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interação lógica para BoardContent.xam
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class BoardContent : UserControl
     {
-        MainViewModel _mainViewModel;
-        public MainWindow()
+        public BoardContent()
         {
-            
             InitializeComponent();
-            _mainViewModel = new MainViewModel(new BoardContentViewModel());
-            DataContext = _mainViewModel;
-            Loaded += MainWindow_Loaded;
-        }
-
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await _mainViewModel.LoadAsync();
         }
     }
 }

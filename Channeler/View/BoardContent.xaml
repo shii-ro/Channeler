@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="Channeler.View.BoardContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:viewmodel="clr-namespace:Channeler.ViewModel"
+             xmlns:view="clr-namespace:Channeler.View"
+             d:DataContext="{d:DesignInstance Type=viewmodel:BoardContentViewModel}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <DataTemplate DataType="{x:Type viewmodel:BoardCatalogViewModel}">
+            <view:BoardCatalog />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodel:BoardThreadViewModel}">
+            <view:BoardThread />
+        </DataTemplate>
+    </UserControl.Resources>
+    <TabControl ItemsSource="{Binding BoardTabs}">
+    </TabControl>
+</UserControl>

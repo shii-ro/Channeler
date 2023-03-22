@@ -47,8 +47,7 @@ namespace Channeler.ViewModel
 
         private void BackToCatalog(object obj)
         {
-            var vm = obj as MainViewModel;
-            vm.CurrentViewModel = vm;
+
         }
     }
 }
