@@ -1,26 +1,34 @@
-﻿using Channeler.Model;
+﻿using Channeler.Command;
+using Channeler.Model;
 using Channeler.ViewModel.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Navigation;
+using System.Windows.Input;
 
 namespace Channeler.ViewModel
 {
+    
     public class BoardCatalogViewModel : ViewModelBase
     {
+        public class ComboBoxKeyValue
+        {
+            public string Name { get; set; }
+            public int Value { get; set; }
+        }
+
         private Random r;
         private Board _currentBoard;
         private ICollectionView _threadsView;
         private ObservableCollection<Model.Thread> _threads;
         private string _filter;
         private List<BoardPage> _boardCatalog;
+        private int _currentImageSize;
+        private int _showOpComment;
 
         public ObservableCollection<Model.Thread> Threads 
         { 
@@ -80,10 +88,42 @@ namespace Channeler.ViewModel
             }
         }
 
+        public int CurrentImageSize
+        {
+            get => _currentImageSize;
+            set
+            {
+                _currentImageSize = value;
+                OnPropertyChanged(nameof(CurrentImageSize));
+            }
+        }
+
+        public ObservableCollection<ComboBoxKeyValue> ImageSizes { get; set; } = new ObservableCollection<ComboBoxKeyValue>
+            {
+                new ComboBoxKeyValue{ Name = "Small", Value = 150 },
+                new ComboBoxKeyValue { Name = "Large", Value = 300 }
+            };
+        public ObservableCollection<ComboBoxKeyValue> OpCommentOptions { get; set; } = new ObservableCollection<ComboBoxKeyValue>
+        {
+            new ComboBoxKeyValue{ Name = "On", Value = 0 },
+            new ComboBoxKeyValue { Name = "Off", Value = 1 }
+        };
+        public int ShowOpComment
+        { 
+            get => _showOpComment;
+            set
+            {
+                _showOpComment = value;
+                OnPropertyChanged(nameof(ShowOpComment));
+            }
+        }
+
         public BoardCatalogViewModel()
         {
             r = new Random();
             Threads = new ObservableCollection<Model.Thread>();
+            CurrentImageSize = ImageSizes[0].Value;
+            ShowOpComment = OpCommentOptions[0].Value;
         }
 
         public override async Task LoadAsync()

@@ -1,8 +1,11 @@
 ﻿using Channeler.Model;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -281,18 +284,29 @@ namespace Channeler.Controls
                                     
                                     if (currentQuoteNo == compareQuoteNo)
                                     {
-                                        ToolTip tooltip = new ToolTip
+
+                                        Popup postPopUpPreview = new Popup
                                         {
-                                            ContentTemplate = postPreview,
-                                            Content = quote,
-                                            Style = viewPostToolTip
+                                            Child = new ContentPresenter() { Content = quote, ContentTemplate = postPreview },
+                                            PlacementTarget = textBlock,
+                                            Placement = PlacementMode.Top,
                                         };
-                                        quotelinkText.ToolTip = tooltip;
+
+                                        postPopUpPreview.SetBinding(
+                                            Popup.IsOpenProperty,
+                                            new Binding()
+                                            {
+                                                Source = quotelinkText,
+                                                Path = new PropertyPath("IsMouseOver"),
+                                                Mode = BindingMode.OneWay,
+                                            });
+
+                                        var parent = textBlock.Parent as Grid;
+                                        parent.Children.Add(postPopUpPreview);
                                         quotelinkText.MouseLeftButtonDown += ScrollToPostOnClick;
                                     }
                                 }
                             }
-
                         textBlock.Inlines.Add(quotelinkText);
                         break;
                     default: break;

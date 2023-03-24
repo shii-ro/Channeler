@@ -1,6 +1,7 @@
 ﻿using Channeler.Command;
 using Channeler.Model;
 using Channeler.ViewModel.Helpers;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -67,7 +68,7 @@ namespace Channeler.ViewModel
             BoardContent.BoardTabs.Add(
                 new TabItem
                 {
-                    Header = CreateClosableHeader($"/{newTab.BoardName}/ - {newTab.CurrentThread.sub ?? newTab.CurrentThread.com[..16]}"),
+                    Header = CreateClosableHeader($"/{newTab.BoardName}/ - {newTab.CurrentThread.sub ?? newTab.CurrentThread.com.Substring(0, Math.Min(newTab.CurrentThread.com.Length, 16))}"),
                     Content = newTab
                 });
             await newTab.LoadAsync();

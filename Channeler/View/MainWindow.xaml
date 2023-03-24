@@ -10,12 +10,6 @@
         mc:Ignorable="d"
         Title="Channeler" Height="450" Width="800">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type viewmodel:BoardCatalogViewModel}">
-            <view:BoardCatalog />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type viewmodel:BoardThreadViewModel}">
-            <view:BoardThread />
-        </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodel:BoardContentViewModel}">
             <view:BoardContent />
         </DataTemplate>

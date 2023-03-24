@@ -157,40 +157,36 @@
                             <ItemsControl ItemsSource="{Binding RepliesPosts}" Margin="5,0,0,0" VerticalAlignment="Bottom">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock
+                                        <StackPanel>
+                                            <TextBlock
+                                                x:Name="QuoteNoTextBlock"
                                                 FontSize="11"
                                                 TextDecorations="Underline"
                                                 VerticalAlignment="Bottom"
                                                 MouseLeftButtonDown="TextBlock_ScrollToPost"
                                                 Margin="0,0,5,0"
                                                 TextWrapping="Wrap">
-                                            <TextBlock.Inlines>
-                                                <Run Text=">>" />
-                                                <Run Text="{Binding no, Mode=OneWay}"/>
-                                            </TextBlock.Inlines>
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#34345C" />
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True" >
-                                                            <Setter Property="Foreground" Value="#d00" />
-                                                            <Setter Property="Cursor" Value="Hand" />
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                            <TextBlock.ToolTip>
-                                                <ToolTip
-                                                        Content="{Binding }"
-                                                        BorderThickness="0"
-                                                        Background="Transparent"
-                                                        Foreground="Black"
-                                                        ContentTemplate="{StaticResource postMiniTemplate}"
-                                                        ToolTipService.InitialShowDelay="0"
-                                                        ToolTipService.BetweenShowDelay="0">
-                                                </ToolTip>
-                                            </TextBlock.ToolTip>
-                                        </TextBlock>
+                                                <TextBlock.Inlines>
+                                                    <Run Text=">>" />
+                                                    <Run Text="{Binding no, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#34345C" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True" >
+                                                                <Setter Property="Foreground" Value="#d00" />
+                                                                <Setter Property="Cursor" Value="Hand" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Popup
+                                                IsOpen="{Binding IsMouseOver,  Mode=OneWay, ElementName=QuoteNoTextBlock}">
+                                                <ContentPresenter Content="{Binding }" ContentTemplate="{StaticResource postMiniTemplate}"/>
+                                            </Popup>
+                                        </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                                 <ItemsControl.ItemsPanel>
@@ -351,8 +347,8 @@
 
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel >
-                        </StackPanel>
+                        <VirtualizingStackPanel >
+                        </VirtualizingStackPanel>
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
             </ListView>

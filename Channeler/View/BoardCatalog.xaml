@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:controls="clr-namespace:Channeler.Controls"
+             xmlns:converters="clr-namespace:Channeler.Converters"
              xmlns:view="clr-namespace:Channeler.View"
              xmlns:local="clr-namespace:Channeler.View"
              xmlns:viewmodel="clr-namespace:Channeler.ViewModel"
@@ -12,6 +13,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
+        <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
         <DataTemplate x:Key="ThreadsDataTemplate">
             <Button
                 Command="{Binding DataContext.LoadThreadCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
@@ -56,8 +58,8 @@
                                 </Border.Effect>
                                 <Image
                                     Source="{Binding imageThumbUrl}"
-                                    MaxHeight="150"
-                                    MaxWidth="150" 
+                                    MaxHeight="{Binding DataContext.CurrentImageSize, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    MaxWidth="{Binding DataContext.CurrentImageSize, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" 
                                     HorizontalAlignment="Center"
                                     Cursor="Hand"/>
                             </Border>
@@ -69,7 +71,7 @@
                                     <Run Text="{Binding images}" FontWeight="DemiBold"/>
                                 </TextBlock.Inlines>
                             </TextBlock>
-                            <StackPanel Grid.Row="2">
+                            <StackPanel Grid.Row="2" Visibility="{Binding DataContext.ShowOpComment, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource IntToVisibilityConverter}}">
                                 <TextBlock TextWrapping="Wrap" Text="{Binding sub}" FontWeight="SemiBold" />
                                 <controls:FormattedTextBlock Text="{Binding com, Mode=OneWay}"/>
                             </StackPanel>
@@ -79,10 +81,7 @@
             </Button>
         </DataTemplate>
     </UserControl.Resources>
-    <!--<UserControl.DataContext>
-        <viewmodel:BoardCatalogViewModel/>
-    </UserControl.DataContext>-->
-    <ScrollViewer>
+    <ScrollViewer VirtualizingPanel.IsVirtualizing="True">
         <StackPanel>
             <Image Source="{Binding BannerSource}" Width="300" Height="100" />
             <TextBlock Text="{Binding CurrentBoard.description}" FontSize="28" Foreground="#af0a0f" TextAlignment="Center" FontWeight="Bold"/>
@@ -97,7 +96,8 @@
                 <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
                     <DockPanel>
                         <Label Content="Sort By" />
-                        <ComboBox SelectedIndex="0" VerticalContentAlignment="Center">
+                        <ComboBox
+                            VerticalContentAlignment="Center">
                             <ComboBoxItem>
                                 <TextBlock Text="Bump Order" />
                             </ComboBoxItem>
@@ -115,25 +115,22 @@
 
                     <DockPanel>
                         <Label Content="Image Size" />
-                        <ComboBox SelectedIndex="0" VerticalContentAlignment="Center">
-                            <ComboBoxItem>
-                                <TextBlock Text="Small" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="Large" />
-                            </ComboBoxItem>
-                        </ComboBox>
+                        <ComboBox
+                            ItemsSource="{Binding ImageSizes}"
+                            SelectedValue="{Binding CurrentImageSize}"
+                            SelectedValuePath="Value"
+                            DisplayMemberPath="Name"
+                            VerticalContentAlignment="Center"/>
                     </DockPanel>
 
                     <DockPanel>
                         <Label Content="Show OP Comment" />
-                        <ComboBox SelectedIndex="0"  VerticalContentAlignment="Center">
-                            <ComboBoxItem>
-                                <TextBlock Text="On" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="Off" />
-                            </ComboBoxItem>
+                        <ComboBox
+                            ItemsSource="{Binding OpCommentOptions}"
+                            SelectedValue="{Binding ShowOpComment}"
+                            SelectedValuePath="Value"
+                            DisplayMemberPath="Name"
+                            VerticalContentAlignment="Center">
                         </ComboBox>
                     </DockPanel>
 
@@ -149,6 +146,7 @@
                 Grid.Column="1"
                 ItemsSource="{Binding Threads}"
                 ItemTemplate="{StaticResource ResourceKey=ThreadsDataTemplate}"
+                VirtualizingPanel.IsVirtualizing="True"
                 VerticalContentAlignment="Center"
                 HorizontalContentAlignment="Center">
                 
