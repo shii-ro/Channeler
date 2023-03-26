@@ -13,18 +13,21 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <DataTemplate x:Key="ThreadsDataTemplate">
             <Button
                 Command="{Binding DataContext.LoadThreadCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                 CommandParameter="{Binding }"
                 Background="Transparent"
+                VerticalContentAlignment="Top"
                 BorderThickness="0" >
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                     </Style>
                 </Button.Style>
-                <StackPanel Height="320" ToolTipService.InitialShowDelay="1000" ToolTipService.BetweenShowDelay="0">
+                <StackPanel ToolTipService.InitialShowDelay="1000" 
+                            ToolTipService.BetweenShowDelay="0"
+                            VerticalAlignment="Top">
                     <StackPanel.ToolTip>
                         <ToolTip Background="Black" Foreground="White">
                             <StackPanel>
@@ -45,8 +48,13 @@
                             </StackPanel>
                         </ToolTip>
                     </StackPanel.ToolTip>
-                    <Border BorderBrush="LightBlue" BorderThickness="0.5" CornerRadius="5">
-                        <Grid MaxHeight="320" Width="180"  VerticalAlignment="Top" Margin="10" >
+                    <Border BorderBrush="LightBlue" 
+                            BorderThickness="0.5" 
+                            VerticalAlignment="Top"
+                            CornerRadius="5">
+                        <Grid MaxHeight="400"
+                              Width="{Binding DataContext.CurrentImageSize, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" 
+                              Margin="10" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto" />
@@ -71,7 +79,7 @@
                                     <Run Text="{Binding images}" FontWeight="DemiBold"/>
                                 </TextBlock.Inlines>
                             </TextBlock>
-                            <StackPanel Grid.Row="2" Visibility="{Binding DataContext.ShowOpComment, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource IntToVisibilityConverter}}">
+                            <StackPanel Grid.Row="2" Visibility="{Binding DataContext.ShowOpComment, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock TextWrapping="Wrap" Text="{Binding sub}" FontWeight="SemiBold" />
                                 <controls:FormattedTextBlock Text="{Binding com, Mode=OneWay}"/>
                             </StackPanel>
@@ -80,6 +88,7 @@
                 </StackPanel>
             </Button>
         </DataTemplate>
+        <CollectionViewSource x:Key="threadsViewSource" Source="{Binding Threads}" />
     </UserControl.Resources>
     <ScrollViewer VirtualizingPanel.IsVirtualizing="True">
         <StackPanel>
@@ -97,20 +106,10 @@
                     <DockPanel>
                         <Label Content="Sort By" />
                         <ComboBox
-                            VerticalContentAlignment="Center">
-                            <ComboBoxItem>
-                                <TextBlock Text="Bump Order" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="Last Reply" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="Creation Date" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="Reply Count" />
-                            </ComboBoxItem>
-                        </ComboBox>
+                            ItemsSource="{Binding SortOptions}"
+                            SelectedValue="{Binding CurrentSortDescription}"
+                            SelectedValuePath="Value"
+                            DisplayMemberPath="Key" />
                     </DockPanel>
 
                     <DockPanel>
@@ -119,7 +118,7 @@
                             ItemsSource="{Binding ImageSizes}"
                             SelectedValue="{Binding CurrentImageSize}"
                             SelectedValuePath="Value"
-                            DisplayMemberPath="Name"
+                            DisplayMemberPath="Key"
                             VerticalContentAlignment="Center"/>
                     </DockPanel>
 
@@ -129,7 +128,7 @@
                             ItemsSource="{Binding OpCommentOptions}"
                             SelectedValue="{Binding ShowOpComment}"
                             SelectedValuePath="Value"
-                            DisplayMemberPath="Name"
+                            DisplayMemberPath="Key"
                             VerticalContentAlignment="Center">
                         </ComboBox>
                     </DockPanel>

@@ -1,37 +1,37 @@
-﻿using Channeler.Command;
-using Channeler.Model;
+﻿using Channeler.Model;
 using Channeler.ViewModel.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Input;
 
 namespace Channeler.ViewModel
 {
-    
+
     public class BoardCatalogViewModel : ViewModelBase
     {
-        public class ComboBoxKeyValue
+        public class ComboBoxKeyValue<T>
         {
-            public string Name { get; set; }
-            public int Value { get; set; }
+            public string Key { get; set; }
+            public T Value { get; set; }
         }
 
         private Random r;
         private Board _currentBoard;
-        private ICollectionView _threadsView;
         private ObservableCollection<Model.Thread> _threads;
         private string _filter;
         private List<BoardPage> _boardCatalog;
         private int _currentImageSize;
-        private int _showOpComment;
+        private SortDescription _currentSortDescription;
+        private bool _showOpComment;
 
-        public ObservableCollection<Model.Thread> Threads 
-        { 
+        public ObservableCollection<Model.Thread> Threads
+        {
             get => _threads;
             private set
             {
@@ -82,7 +82,7 @@ namespace Channeler.ViewModel
                 if (value != _filter)
                 {
                     _filter = value;
-                    _threadsView.Refresh();
+                    ThreadsViewSource.Refresh();
                     OnPropertyChanged(nameof(Filter));
                 }
             }
@@ -98,23 +98,48 @@ namespace Channeler.ViewModel
             }
         }
 
-        public ObservableCollection<ComboBoxKeyValue> ImageSizes { get; set; } = new ObservableCollection<ComboBoxKeyValue>
+        public ICollectionView ThreadsViewSource { get; set; }
+
+        public ObservableCollection<ComboBoxKeyValue<int>> ImageSizes { get; } = new ObservableCollection<ComboBoxKeyValue<int>>
             {
-                new ComboBoxKeyValue{ Name = "Small", Value = 150 },
-                new ComboBoxKeyValue { Name = "Large", Value = 300 }
+                new ComboBoxKeyValue<int>{ Key = "Small", Value = 150 },
+                new ComboBoxKeyValue<int>{ Key = "Large", Value = 300 }
             };
-        public ObservableCollection<ComboBoxKeyValue> OpCommentOptions { get; set; } = new ObservableCollection<ComboBoxKeyValue>
+
+        public ObservableCollection<ComboBoxKeyValue<bool>> OpCommentOptions { get; } = new ObservableCollection<ComboBoxKeyValue<bool>>
         {
-            new ComboBoxKeyValue{ Name = "On", Value = 0 },
-            new ComboBoxKeyValue { Name = "Off", Value = 1 }
+            new ComboBoxKeyValue<bool>{ Key = "On", Value = true },
+            new ComboBoxKeyValue<bool>{ Key = "Off", Value = false}
         };
-        public int ShowOpComment
-        { 
+
+        public ObservableCollection<ComboBoxKeyValue<SortDescription>> SortOptions { get; } = new ObservableCollection<ComboBoxKeyValue<SortDescription>>
+        {
+            new ComboBoxKeyValue<SortDescription> { Key = "Bump Order", Value = new SortDescription("replies", ListSortDirection.Descending) },
+            new ComboBoxKeyValue<SortDescription> { Key = "Last Reply", Value = new SortDescription("last_replies.Last().now", ListSortDirection.Descending) },
+            new ComboBoxKeyValue<SortDescription> { Key = "Creation Date", Value = new SortDescription("now", ListSortDirection.Descending) },
+            new ComboBoxKeyValue<SortDescription> { Key = "Reply Count", Value = new SortDescription("replies", ListSortDirection.Descending) },
+        };
+
+        public bool ShowOpComment
+        {
             get => _showOpComment;
             set
             {
                 _showOpComment = value;
                 OnPropertyChanged(nameof(ShowOpComment));
+            }
+        }
+
+        public SortDescription CurrentSortDescription
+        {
+            get => _currentSortDescription;
+            set
+            {
+                _currentSortDescription = value;
+                ThreadsViewSource.SortDescriptions.Clear();
+                if(_currentSortDescription != SortOptions[0].Value) 
+                    ThreadsViewSource.SortDescriptions.Add(CurrentSortDescription);
+                OnPropertyChanged(nameof(CurrentSortDescription));
             }
         }
 
@@ -129,15 +154,18 @@ namespace Channeler.ViewModel
         public override async Task LoadAsync()
         {
             List<BoardPage> newCatalog = await ApiHelper.GetBoardCatalog(CurrentBoard.board);
-           
+
             Threads = new ObservableCollection<Model.Thread>();
+
             newCatalog.ForEach(page =>
             {
                 page.threads.ForEach(thread => Threads.Add(thread));
             });
+            ThreadsViewSource = CollectionViewSource.GetDefaultView(Threads);
+            Thread t = new Thread();
 
-            _threadsView = CollectionViewSource.GetDefaultView(Threads);
-            _threadsView.Filter = t =>
+
+            ThreadsViewSource.Filter = t =>
             {
                 const string pattern = @"<[^>]*>";
                 Model.Thread thread = t as Model.Thread;
@@ -147,6 +175,7 @@ namespace Channeler.ViewModel
 
 
                 if (string.IsNullOrEmpty(Filter)) return true;
+
                 else if (thread.com is not null)
                 {
                     string contentWithoutTags = Regex.Replace(content, pattern, "");
@@ -158,6 +187,8 @@ namespace Channeler.ViewModel
                 }
                 else return false;
             };
+
+            CurrentSortDescription = SortOptions[0].Value;
             BoardCatalog = newCatalog;
         }
     }
