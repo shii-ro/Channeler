@@ -21,11 +21,11 @@ namespace Channeler.ViewModel
             public T Value { get; set; }
         }
 
-        private Random r;
         private Board _currentBoard;
-        private ObservableCollection<Model.Thread> _threads;
+        private readonly Random _random = new();
+        private ObservableCollection<Model.Thread> _threads = new();
+        private List<BoardPage> _boardCatalog = new();
         private string _filter;
-        private List<BoardPage> _boardCatalog;
         private int _currentImageSize;
         private SortDescription _currentSortDescription;
         private bool _showOpComment;
@@ -46,8 +46,7 @@ namespace Channeler.ViewModel
             get { return _currentBoard; }
             set
             {
-                if (_currentBoard == value) return;
-                else
+                if (value != _currentBoard) 
                 {
                     _currentBoard = value;
                     OnPropertyChanged(nameof(CurrentBoard));
@@ -69,14 +68,11 @@ namespace Channeler.ViewModel
         }
         public string BannerSource
         {
-            get => $"https://s.4cdn.org/image/title/{r.Next(260)}.png";
+            get => $"https://s.4cdn.org/image/title/{_random.Next(260)}.png";
         }
         public string Filter
         {
-            get
-            {
-                return _filter;
-            }
+            get => _filter;
             set
             {
                 if (value != _filter)
@@ -145,15 +141,13 @@ namespace Channeler.ViewModel
 
         public BoardCatalogViewModel()
         {
-            r = new Random();
-            Threads = new ObservableCollection<Model.Thread>();
             CurrentImageSize = ImageSizes[0].Value;
             ShowOpComment = OpCommentOptions[0].Value;
         }
 
         public override async Task LoadAsync()
         {
-            List<BoardPage> newCatalog = await ApiHelper.GetBoardCatalog(CurrentBoard.board);
+            List<BoardPage> newCatalog = await Task.Run( () => ApiHelper.GetBoardCatalog(CurrentBoard.board) );
 
             Threads = new ObservableCollection<Model.Thread>();
 
@@ -161,6 +155,7 @@ namespace Channeler.ViewModel
             {
                 page.threads.ForEach(thread => Threads.Add(thread));
             });
+
             ThreadsViewSource = CollectionViewSource.GetDefaultView(Threads);
             Thread t = new Thread();
 

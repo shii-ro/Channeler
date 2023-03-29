@@ -1,7 +1,7 @@
 ﻿using Channeler.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -10,17 +10,15 @@ using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace Channeler.Controls
-{ 
+{
     public class FormattedTextBlock : TextBlock
     {
         static Style quotelinkStyle;
         static Style quoteStyle;
         static Style spoilerTextStyle;
-        static Style viewPostToolTip;
-        static List<Post> _quotes;
         static ListView _list;
         static DataTemplate postPreview;
-        public static List<Post> QuotesPosts { get => _quotes; set => _quotes = value; }
+
         public static ListView List { get => _list; set => _list = value; }
 
         public FormattedTextBlock()
@@ -29,72 +27,78 @@ namespace Channeler.Controls
             quoteStyle = Application.Current.FindResource("quoteStyle") as Style;
             spoilerTextStyle = Application.Current.FindResource("spoilerTextStyle") as Style;
             postPreview = Application.Current.FindResource("postMiniTemplate") as DataTemplate;
-            viewPostToolTip = Application.Current.FindResource("viewPostToolTip") as Style;
             TextWrapping = TextWrapping.Wrap;
         }
 
-        public new string Text
-        {
-            get { return (string)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
-        }
-        public List<Post> Replies
-        {
-            get { return (List<Post>)GetValue(RepliesProperty); }
-            set { SetValue(RepliesProperty, value); }
-        }
         public ListView PostList
         {
             get { return (ListView)GetValue(PostListProperty); }
             set { SetValue(PostListProperty, value); }
         }
 
+        public Post Post
+        {
+            get { return (Post)GetValue(PostProperty); }
+            set { SetValue(PostProperty, value); }
+        }
+
+        public Thread Thread
+        {
+            get { return (Thread)GetValue(ThreadProperty); }
+            set { SetValue(ThreadProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Thread.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ThreadProperty =
+            DependencyProperty.Register("Thread", typeof(Thread), typeof(FormattedTextBlock), new PropertyMetadata(null, OnThreadChanged));
+
+        // Using a DependencyProperty as the backing store for Post.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PostProperty =
+            DependencyProperty.Register("Post", typeof(Post), typeof(FormattedTextBlock), new PropertyMetadata(null, OnPostChanged));
+
         // Using a DependencyProperty as the backing store for PostList.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PostListProperty =
             DependencyProperty.Register("PostList", typeof(ListView), typeof(FormattedTextBlock), new PropertyMetadata(null, OnPostListChanged));
 
-        // Using a DependencyProperty as the backing store for Replies.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty RepliesProperty =
-            DependencyProperty.Register("Replies", typeof(List<Post>), typeof(FormattedTextBlock), new PropertyMetadata(null, OnRepliesChanged));
-
-        // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
-        public new static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register("Text", typeof(string), typeof(FormattedTextBlock), new PropertyMetadata(null, OnTextChanged));
-
         private static void OnPostListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if(d is null) return;
+            if (d is null) return;
             ListView list = e.NewValue as ListView;
             List = list;
         }
 
-        private static void OnRepliesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnPostChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is FormattedTextBlock textBlock))
+            if(!(d is FormattedTextBlock textBlock)) return;
+
+            Post? newPost = e.NewValue as Post;
+
+            if (string.IsNullOrEmpty(newPost?.com))
             {
                 return;
             }
 
-            QuotesPosts = e.NewValue as List<Post>;
+            textBlock.Text = null;
+
+            FormatText(textBlock, newPost.com, newPost);
         }
 
-        private static void OnTextChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        private static void OnThreadChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(source is FormattedTextBlock textBlock))
+            if (!(d is FormattedTextBlock textBlock)) return;
+
+            Thread? newThread = e.NewValue as Thread;
+
+            if (string.IsNullOrEmpty(newThread?.com))
             {
                 return;
             }
 
-            textBlock.Inlines.Clear();
+            textBlock.Text = null;
 
-            string? newText = e.NewValue as string;
-
-            if (string.IsNullOrEmpty(newText))
-            {
-                return;
-            }
-            FormatText(textBlock, newText);
+            FormatText(textBlock, newThread.com, null);
         }
+
 
         private static string[] sClosingTags =
         {
@@ -114,37 +118,38 @@ namespace Channeler.Controls
             public List<Attribute> attributes;
             public HtmlParse child;
         }
-        private static void FormatText(TextBlock textBlock, string newText)
+        private static void FormatText(TextBlock textBlock, string htmlString, Post? currentPost)
         {
             bool insideElement = false;
-            List<HtmlParse> root = new List<HtmlParse>();
+            List<HtmlParse> parsedElements = new List<HtmlParse>();
             HtmlParse currentElement = new HtmlParse();
-            char c = newText[0];
-            for (int characterCount = 1; characterCount < newText.Length;)
+            char currentCharacter = htmlString[0];
+
+            for (int characterCount = 1; characterCount < htmlString.Length;)
             {
                 // start of a HTMl element ?
                 // just straight text then, convert to a <p> element
                 // check if its not a closing element
-                if (c == '<')
+                if (currentCharacter == '<')
                 {
                     if (!insideElement)
                     {
                         // get the attributes and tag
                         string newTag = "";
                         // read until end blank character or '>'
-                        while (c != ' ')
+                        while (currentCharacter != ' ')
                         {
-                            newTag += c;
+                            newTag += currentCharacter;
 
-                            c = newText[characterCount++];
+                            currentCharacter = htmlString[characterCount++];
 
-                            if (c == '=') continue;
-                            else if (c == '>')
+                            if (currentCharacter == '=') continue;
+                            else if (currentCharacter == '>')
                             {
-                                newTag += c;
+                                newTag += currentCharacter;
                                 break;
                             }
-                            else if (c == ' ')
+                            else if (currentCharacter == ' ')
                             {
                                 newTag += '>';
                                 break;
@@ -154,27 +159,27 @@ namespace Channeler.Controls
                         currentElement.tag = newTag;
 
                         // current character is ' ', may have attributes
-                        if (c is ' ')
+                        if (currentCharacter is ' ')
                         {
                             currentElement.attributes = new List<Attribute>();
-                            while (c != '>')
+                            while (currentCharacter != '>')
                             {
                                 // get key
                                 string key = "";
-                                while (c != '=')
+                                while (currentCharacter != '=')
                                 {
-                                    c = newText[characterCount++];
-                                    if (c == '=') continue;
-                                    key += c;
+                                    currentCharacter = htmlString[characterCount++];
+                                    if (currentCharacter == '=') continue;
+                                    key += currentCharacter;
                                 }
                                 string value = "";
                                 // get value ( attributes sometimes doesnt hav a value)
-                                if (c == '=')
+                                if (currentCharacter == '=')
                                 {
-                                    while (c != ' ' && c != '>')
+                                    while (currentCharacter != ' ' && currentCharacter != '>')
                                     {
-                                        c = newText[characterCount++];
-                                        value += c;
+                                        currentCharacter = htmlString[characterCount++];
+                                        value += currentCharacter;
                                     }
                                 }
                                 Attribute currentAttribute;
@@ -190,42 +195,39 @@ namespace Channeler.Controls
 
                     // now checks if the attribute has content inside if the tag is not self closing
                     string content = "";
-                    if (characterCount >= newText.Length) return;
-                    c = newText[characterCount++];
+                    if (characterCount >= htmlString.Length) return;
+                    currentCharacter = htmlString[characterCount++];
 
                     if (sClosingTags.Contains(currentElement.tag))
                     {
                         insideElement = false;
-                        root.Add(currentElement);
+                        parsedElements.Add(currentElement);
                         currentElement = new HtmlParse();
                     }
 
-                    else if (c == '/')
+                    else if (currentCharacter == '/')
                     {
                         // check if the next character is '/', if not, its a nested element
-                        root.Add(currentElement);
+                        parsedElements.Add(currentElement);
                         currentElement = new HtmlParse();
-                        while (c != '>' && characterCount < newText.Length)
+                        while (currentCharacter != '>' && characterCount < htmlString.Length)
                         {
-                            c = newText[characterCount++];
+                            currentCharacter = htmlString[characterCount++];
                         }
                         insideElement = false;
-                        if (characterCount < newText.Length)
-                            c = newText[characterCount++];
+                        if (characterCount < htmlString.Length)
+                            currentCharacter = htmlString[characterCount++];
                     }
-                    else if (c != '<')
+                    else if (currentCharacter != '<')
                     {
-                        while (c != '<' && characterCount < newText.Length)
+                        while (currentCharacter != '<' && characterCount < htmlString.Length)
                         {
-                            content += c;
-                            c = newText[characterCount++];
+                            content += currentCharacter;
+                            currentCharacter = htmlString[characterCount++];
                         }
                         insideElement = true;
                         currentElement.content = content;
                     }
-
-
-
                 }
 
                 // parse texts without <p>
@@ -235,23 +237,24 @@ namespace Channeler.Controls
                     {
                         currentElement.tag = "<p>";
                         currentElement.content = "";
-                        while (c != '<' && characterCount < newText.Length)
+                        while (currentCharacter != '<' && characterCount < htmlString.Length)
                         {
-                            currentElement.content += c;
-                            c = newText[characterCount++];
+                            currentElement.content += currentCharacter;
+                            currentCharacter = htmlString[characterCount++];
                         }
-                        if (characterCount == newText.Length)
-                            currentElement.content += newText[characterCount - 1];
+                        if (characterCount == htmlString.Length)
+                            currentElement.content += htmlString[characterCount - 1];
 
                         insideElement = false;
-                        root.Add(currentElement);
+                        parsedElements.Add(currentElement);
                         currentElement = new HtmlParse();
                     }
                 }
             }
-            foreach (HtmlParse h in root)
-            {
 
+
+            foreach (HtmlParse h in parsedElements)
+            {
                 switch (h.tag)
                 {
                     case "<s>":
@@ -269,50 +272,61 @@ namespace Channeler.Controls
                         quoteText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         textBlock.Inlines.Add(quoteText);
                         break;
-                    case "<a>": //  ugly and repetititve code
+                    case "<a>":
                         Run quotelinkText = new Run();
                         quotelinkText.Text = System.Net.WebUtility.HtmlDecode(h.content);
                         quotelinkText.Style = quotelinkStyle;
 
-                        if (QuotesPosts is not null)
-                            if (QuotesPosts.Count > 0)
+                        if (currentPost?.QuotesPosts?.Count > 0)
+                        {
+                            foreach (var quote in currentPost.QuotesPosts)
                             {
-                                foreach (var quote in QuotesPosts)
+                                string currentQuoteNo = quotelinkText.Text.Substring(2);
+                                string compareQuoteNo = quote.no.ToString();
+
+                                if (currentQuoteNo == compareQuoteNo)
                                 {
-                                    string currentQuoteNo = quotelinkText.Text.Substring(2);
-                                    string compareQuoteNo = quote.no.ToString();
-                                    
-                                    if (currentQuoteNo == compareQuoteNo)
-                                    {
+                                    Popup postPopUpPreview = CreatePostPopupPreview(quote, textBlock, quotelinkText);
 
-                                        Popup postPopUpPreview = new Popup
-                                        {
-                                            Child = new ContentPresenter() { Content = quote, ContentTemplate = postPreview },
-                                            PlacementTarget = textBlock,
-                                            Placement = PlacementMode.Top,
-                                        };
+                                    var parent = textBlock.Parent as Grid;
+                                    parent.Children.Add(postPopUpPreview);
 
-                                        postPopUpPreview.SetBinding(
-                                            Popup.IsOpenProperty,
-                                            new Binding()
-                                            {
-                                                Source = quotelinkText,
-                                                Path = new PropertyPath("IsMouseOver"),
-                                                Mode = BindingMode.OneWay,
-                                            });
-
-                                        var parent = textBlock.Parent as Grid;
-                                        parent.Children.Add(postPopUpPreview);
-                                        quotelinkText.MouseLeftButtonDown += ScrollToPostOnClick;
-                                    }
+                                    quotelinkText.MouseLeftButtonDown += ScrollToPostOnClick;
                                 }
                             }
+                        }
+
                         textBlock.Inlines.Add(quotelinkText);
                         break;
                     default: break;
 
                 }
             }
+        }
+
+        private static Popup CreatePostPopupPreview(Post post, FrameworkElement placementTarget, Run quoteLinkText)
+        {
+            Popup postPopUpPreview = new Popup
+            {
+                Child = new ContentPresenter() 
+                    { 
+                        Content = post,
+                        ContentTemplate = postPreview
+                    },
+                PlacementTarget = placementTarget,
+                Placement = PlacementMode.Top,
+            };
+
+            postPopUpPreview.SetBinding(
+                Popup.IsOpenProperty,
+                new Binding()
+                {
+                    Source = quoteLinkText,
+                    Path = new PropertyPath("IsMouseOver"),
+                    Mode = BindingMode.OneWay,
+                });
+
+            return postPopUpPreview;
         }
 
         private static void ScrollToPostOnClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

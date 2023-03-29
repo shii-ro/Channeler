@@ -15,7 +15,7 @@ namespace Channeler.Model
         public string now { get; set; }
         public string name { get; set; }
         public string sub { get; set; }
-        public string com { get; set; }
+        public string? com { get; set; }
         public string filename { get; set; }
         public string ext { get; set; }
         public string fullFile => filename + ext;
@@ -25,8 +25,8 @@ namespace Channeler.Model
         public int tn_w { get; set; }
         public int tn_h { get; set; }
         public object tim { get; set; }
-        public string imageThumbUrl { get; set; }
-        public string imageUrl { get; set; }
+        public string? imageThumbUrl { get; set; }
+        public string? imageUrl { get; set; }
         public int time { get; set; }
         public string md5 { get; set; }
         public int fsize { get; set; }
@@ -34,8 +34,8 @@ namespace Channeler.Model
         public string capcode { get; set; }
         public string semantic_url { get; set; }
         public int replies { get; set; }
-        public List<Post> RepliesPosts { get; set; }
-        public List<Post> QuotesPosts { get; set; }
+        public List<Post> RepliesPosts { get; set; } = new List<Post>();
+        public List<Post> QuotesPosts { get; set; } = new List<Post>();
         public int images { get; set; }
         public int unique_ips { get; set; }
     }

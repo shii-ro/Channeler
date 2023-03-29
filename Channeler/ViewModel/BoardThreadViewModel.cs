@@ -32,7 +32,7 @@ namespace Channeler.ViewModel
 
         public override async Task LoadAsync()
         {
-            ThreadPosts = await ApiHelper.GetThreadPosts(BoardName, CurrentThread.no.ToString());
+            ThreadPosts = await Task.Run( () => ApiHelper.GetThreadPosts(BoardName, CurrentThread.no.ToString()));
         }
 
         public ThreadPosts ThreadPosts

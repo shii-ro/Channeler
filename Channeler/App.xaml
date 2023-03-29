@@ -16,13 +16,6 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="viewPostToolTip" TargetType="ToolTip">
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="Black" />
-            <Setter Property="ToolTipService.InitialShowDelay" Value="0" />
-            <Setter Property="ToolTipService.BetweenShowDelay" Value="0" />
-        </Style>
         <Style x:Key="quoteStyle" TargetType="Run">
             <Setter Property="Foreground" Value="#789922" />
         </Style>
@@ -49,7 +42,7 @@
                             <RowDefinition />
                             <RowDefinition />
                         </Grid.RowDefinitions>
-                        <!-- Poster Name, Date of the post, Post Number, Add Replies later -->
+                        <!-- Poster Name, Date of the post, Post Number -->
                         <WrapPanel Grid.Row="0">
                             <TextBlock  Margin="5,0,0,0" FontSize="14" Text="{Binding name}" Foreground="#117743" FontWeight="Bold" />
                             <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="{Binding now}" />
@@ -124,7 +117,7 @@
 
                             </Image>
                             <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
-                            <controls:FormattedTextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
+                            <controls:FormattedTextBlock Grid.Column="1" Post="{Binding }" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
                         </Grid>
                     </Grid>
                 </Grid>

@@ -79,7 +79,7 @@ namespace Channeler.ViewModel
             BoardContent = boardContent;
 
             LoadThreadCommand = new DelegateCommand(LoadThreadAsync);
-            BoardList = ApiHelper.GetBoards();
+            BoardList = ApiHelper.GetBoards().Result;
         }
 
         private Grid CreateClosableHeader(string headerContent)

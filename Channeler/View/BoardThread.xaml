@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewmodel="clr-namespace:Channeler.ViewModel"
-             xmlns:converter="clr-namespace:Channeler.Converters"
              xmlns:controls="clr-namespace:Channeler.Controls"
              xmlns:models="clr-namespace:Channeler.Model"
              xmlns:local="clr-namespace:Channeler.View"
@@ -13,7 +12,6 @@
              d:Background="White"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <converter:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <DataTemplate x:Key="postMiniTemplate" >
             <Border
                 BorderBrush="#b7c5d9"
@@ -59,7 +57,16 @@
                             </TextBlock>
                         </WrapPanel>
                         <!-- Post File Info ( If there's any) -->
-                        <TextBlock Grid.Row="1"   Visibility="{Binding filename, Converter={StaticResource NullToVisibilityConverter}}">
+                        <TextBlock Grid.Row="1">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding filename}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
                             <TextBlock.Inlines>
                                 <Run Text="File:" />
                                 <Run Text="{Binding fullFile, Mode=OneWay}" TextDecorations="Underline">
@@ -84,8 +91,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Image
-                                Visibility="{Binding imageThumbUrl, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Image>
                                 <Image.Style>
                                     <Style TargetType="{x:Type Image}">
                                         <Setter Property="MaxHeight" Value="150" />
@@ -93,8 +99,8 @@
                                         <Setter Property="Source" Value="{Binding imageUrl, TargetNullValue={x:Null}}" />
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="MaxHeight" Value="800" />
-                                                <Setter Property="MaxWidth" Value="800" />
+                                                <Setter Property="MaxHeight" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=ActualHeight}" />
+                                                <Setter Property="MaxWidth" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=ActualWidth}" />
                                                 <Setter Property="Source" Value="{Binding imageUrl}" />
                                             </Trigger>
                                         </Style.Triggers>
@@ -103,18 +109,21 @@
 
                             </Image>
                             <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
-                            <controls:FormattedTextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap" Margin="10,5,0,0" Padding="0,0,0,10" />
+                            <controls:FormattedTextBlock Grid.Column="1" 
+                                                         Post="{Binding }" 
+                                                         FontSize="14"
+                                                         TextWrapping="Wrap" 
+                                                         Margin="10,5,0,0"
+                                                         Padding="0,0,0,10" />
                         </Grid>
                     </Grid>
                 </Grid>
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="postTemplate" >
-            <Border
-                BorderBrush="#b7c5d9"
-                BorderThickness="2"
-                Margin="20,2,0,0"
-                >
+            <Border BorderBrush="#b7c5d9"
+                    BorderThickness="2"
+                    Margin="20,2,0,0">
                 <Grid x:Name="postGrid" Background="#d6daf0">
                     <Grid Margin="0"
                             Grid.Column="0"
@@ -128,10 +137,10 @@
                         <WrapPanel Grid.Row="0">
                             <TextBlock  Margin="5,0,0,0" FontSize="14" Text="{Binding name}" Foreground="#117743" FontWeight="Bold" />
                             <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="{Binding now}" />
-                            <TextBlock  Margin="5,0,0,0" Text="No." FontSize="14" >
+                            <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="No." />
+                            <TextBlock Text="{Binding no}" Foreground="Black" FontSize="14">
                                 <TextBlock.Style>
-                                    <Style TargetType="TextBlock" >
-                                        <Setter Property="Foreground" Value="Black"/>
+                                    <Style TargetType="TextBlock">
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter Property="Foreground" Value="Red" />
@@ -141,20 +150,10 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <TextBlock Text="{Binding no}" FontSize="14">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" >
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Foreground" Value="Red" />
-                                                <Setter Property="Cursor" Value="Hand" />
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-
-                            <ItemsControl ItemsSource="{Binding RepliesPosts}" Margin="5,0,0,0" VerticalAlignment="Bottom">
+                            <!-- Posts Replies Area -->
+                            <ItemsControl ItemsSource="{Binding RepliesPosts}" 
+                                          Margin="5,0,0,0"
+                                          VerticalAlignment="Center">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel>
@@ -197,7 +196,16 @@
                             </ItemsControl>
                         </WrapPanel>
                         <!-- Post File Info ( If there's any) -->
-                        <TextBlock Grid.Row="1"   Visibility="{Binding filename, Converter={StaticResource NullToVisibilityConverter}}">
+                        <TextBlock Grid.Row="1">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding filename}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
                             <TextBlock.Inlines>
                                 <Run Text="File:" />
                                 <Run Text="{Binding fullFile, Mode=OneWay}" TextDecorations="Underline">
@@ -222,7 +230,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Image Visibility="{Binding imageThumbUrl, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Image>
                                 <Image.Style>
                                     <Style TargetType="{x:Type Image}">
                                         <Setter Property="MaxHeight" Value="150" />
@@ -230,25 +238,24 @@
                                         <Setter Property="Source" Value="{Binding imageThumbUrl}" />
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="MaxHeight" Value="800" />
-                                                <Setter Property="MaxWidth" Value="800" />
+                                                <Setter Property="MaxHeight" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=ActualHeight}" />
+                                                <Setter Property="MaxWidth" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=ActualWidth}" />
                                                 <Setter Property="Source" Value="{Binding imageUrl}" />
                                             </Trigger>
+                                            <DataTrigger Binding="{Binding imageThumbUrl}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-
                                 </Image.Style>
                             </Image>
-                            <!--<TextBlock Grid.Column="1" Text="{Binding com}" FontSize="14" TextWrapping="Wrap"/>-->
-                            <controls:FormattedTextBlock
-                                Grid.Column="1" 
-                                Text="{Binding com}" 
-                                FontSize="14" 
-                                TextWrapping="Wrap" 
-                                Margin="10,5,0,0"
-                                PostList="{x:Reference postsListView}"
-                                Replies="{Binding QuotesPosts}"
-                                Padding="0,0,0,10" />
+                            <controls:FormattedTextBlock Grid.Column="1" 
+                                                         Post="{Binding }" 
+                                                         FontSize="14" 
+                                                         TextWrapping="Wrap" 
+                                                         Margin="10,5,0,0"
+                                                         PostList="{x:Reference postsListView}"
+                                                         Padding="0,0,0,10" />
                         </Grid>
                     </Grid>
                 </Grid>
@@ -269,15 +276,6 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <!-- NavBar -->
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <!-- Back Button -->
-                    <Button Grid.Column="0" Content="Back" Command="{Binding BackToCatalogCommand}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
-                </Grid>
                 <!-- File -->
                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" >
                     <TextBlock.Inlines>
@@ -309,23 +307,70 @@
                     Margin="25,0,0,0"
                     MaxHeight="250"
                     MaxWidth="250" />
-                <DockPanel Grid.Column="1" Grid.Row="1" Margin="10,10,0,0">
-                    <TextBlock FontSize="14" VerticalAlignment="Center">
-                        <TextBlock.Inlines>
-                            <Run Text="{Binding CurrentThread.sub}"/>
-                            <Run Text="{Binding CurrentThread.name}" Foreground="#117743" FontWeight="Bold"/>
-                            <Run Text="{Binding CurrentThread.now}" />
-                            <Run Text="No." />
-                            <Run Text="{Binding CurrentThread.no}" />
-                        </TextBlock.Inlines>
-                    </TextBlock>
-                </DockPanel>
+                <WrapPanel Grid.Column="1" Grid.Row="1" Margin="10,10,0,0">
+                    <TextBlock  Margin="5,0,0,0" FontSize="14" Text="{Binding CurrentThread.name}" Foreground="#117743" FontWeight="Bold" />
+                    <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="{Binding  CurrentThread.now}" />
+                    <TextBlock  Margin="5,0,0,0" FontSize="14"  Text="No." />
+                    <TextBlock Text="{Binding  CurrentThread.no}" Foreground="Black" FontSize="14">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Foreground" Value="Red" />
+                                            <Setter Property="Cursor" Value="Hand" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <!-- Posts Replies Area -->
+                    <ItemsControl ItemsSource="{Binding ThreadPosts.posts[0].RepliesPosts}" 
+                                          Margin="5,0,0,0"
+                                          VerticalAlignment="Center">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock  x:Name="QuoteNoTextBlock"
+                                                FontSize="11"
+                                                TextDecorations="Underline"
+                                                VerticalAlignment="Bottom"
+                                                MouseLeftButtonDown="TextBlock_ScrollToPost"
+                                                Margin="0,0,5,0"
+                                                TextWrapping="Wrap">
+                                        <TextBlock.Inlines>
+                                            <Run Text=">>" />
+                                            <Run Text="{Binding no, Mode=OneWay}"/>
+                                        </TextBlock.Inlines>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#34345C" />
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True" >
+                                                        <Setter Property="Foreground" Value="#d00" />
+                                                        <Setter Property="Cursor" Value="Hand" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <Popup IsOpen="{Binding IsMouseOver,  Mode=OneWay, ElementName=QuoteNoTextBlock}">
+                                        <ContentPresenter Content="{Binding }" ContentTemplate="{StaticResource postMiniTemplate}"/>
+                                    </Popup>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </WrapPanel>
                 <controls:FormattedTextBlock
                     Grid.Column="1" 
                     FontSize="14"
                     Grid.Row="2" 
-                    Text="{Binding CurrentThread.com}"
-                    Tag="{Binding ThreadPosts.posts[0].RepliesPosts}"
+                    Post="{Binding ThreadPosts.posts[0]}"
                     Margin="10,10,0,0"/>
             </Grid>
             <!-- Posts ListView -->
